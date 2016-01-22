@@ -30,7 +30,7 @@ function send(channel, text, attachments) {
 }
 
 function onWebsocketMessage(message, callback) {
-    if(message.type == 'message' && message.text && message.text.indexOf(".") == 0) {
+    if(message.type == 'message' && message.text && message.text.indexOf(".") === 0) {
         var channel = message.channel;
         var commandName = parseCommand(message.text);
         var command = commands[commandName];
@@ -66,7 +66,7 @@ function memebot(channel, args, message) {
         loadMemes(function(msg) {
             send(channel, msg);
         });
-    } else {
+    } else if (args) {
         var obj = parseText(args);
         findMeme(obj.id, function(meme) {
             createMeme(obj, function(result) {
@@ -75,6 +75,8 @@ function memebot(channel, args, message) {
                 }
             });
         });
+    } else {
+        printHelp(channel);
     }
 }
 
@@ -142,9 +144,10 @@ function splitText(text) {
     };
 }
 
-function printHelp(channel, args, message) {
-    var helpMsg = "MemeBot commands:";
-    helpMsg += ".memebot list \tLists all memes";
+function printHelp(channel) {
+    var helpMsg = "memebot commands:\n";
+    helpMsg += "*.memebot list* \tLists all memes\n";
+    helpMsg += "*.memebot _id_ _caption_*\tCreates a meme";
     send(channel, helpMsg);
 }
 
