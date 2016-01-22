@@ -13,7 +13,7 @@ function slackbot(token) {
 slackbot.prototype.api = function(method, params, cb) {
   var options, post_data, req;
 
-  params['token'] = this.token;
+  params.token = this.token;
   post_data = querystring.stringify(params);
 
   options = {
@@ -36,7 +36,7 @@ slackbot.prototype.api = function(method, params, cb) {
     });
     return res.on('end', function() {
       var value;
-      if (cb != null) {
+      if (cb) {
         if (res.statusCode === 200) {
           value = JSON.parse(buffer);
           return cb(value);
@@ -51,7 +51,7 @@ slackbot.prototype.api = function(method, params, cb) {
   });
   
   req.on('error', function(error) {
-    if (cb != null) {
+    if (cb) {
       return cb({
         'ok': false,
         'error': error.errno
@@ -79,22 +79,13 @@ slackbot.prototype.handle = function(data) {
 
 slackbot.prototype.sendMessage = function(channel, text, attachments) {
   var message = {
-    id: ++this.messageID,
     type: 'message',
     channel: channel,
-    text: text
+    text: text,
+    username: 'Meme Bot',
+    icon_emoji: ':paperclip:'
   };
-  
-  // see https://api.slack.com/docs/attachments
-  if(attachments && attachments.length > 0) {
-    message.attachments = JSON.stringify(attachments);
-    message.username = "OmniBot";
-    message.as_user = true;
-    message.unfurl_links = false;
-    return this.api("chat.postMessage", message);
-  } else {
-    return this.ws.send(JSON.stringify(message));
-  }
+  return this.api("chat.postMessage", message);
 };
 
 slackbot.prototype.ping = function(callback) {
@@ -143,7 +134,7 @@ slackbot.prototype.startConnectionChecking = function() {
             self.connect();
         }
     }, 5000);
-}
+};
 
 function slackbotlog(msg) {
     console.log(new Date() + "\t" + msg);
