@@ -64,9 +64,9 @@ function memebot(channel, args, message) {
         var a = args.split(' ');
         var msg;
         if (a.length > 1) {
-            msg = printMemesBySearch(a.slice(1).join(' '));
+            msg = printMemesBySearch(a.slice(1).join(' '), args[0] === 'listdetail');
         } else {
-            msg = printMemesByTop();
+            msg = printMemesByTop(args[0] === 'listdetail');
         }
         send(channel, msg);
     } else if (args) {
@@ -102,12 +102,15 @@ function loadMemes() {
     });
 }
 
-function printMemesByTop() {
+function printMemesByTop(showImages) {
     var msg = '';
     var data = memes.slice(0, top);
     data.sort(memeCompare);
     for (var i = 0; i < top; i++) {
         msg += data[i].name + ' (' + data[i].id + ')\n';
+        if (showImages) {
+            msg += data[i].url;
+        }
     }
     return msg;
 }
@@ -117,6 +120,9 @@ function printMemesBySearch(search) {
     for (var i = 0; i < memes.length; i++) {
         if (memes[i].name.toLowerCase().indexOf(search.toLowerCase()) > -1) {
             msg += memes[i].name + ' (' + memes[i].id + ')\n';
+            if (showImages) {
+                msg += data[i].url;
+            }
         }
     }
     return msg;
@@ -168,6 +174,8 @@ function printHelp(channel) {
     var helpMsg = "memebot commands:\n";
     helpMsg += "*.memebot list* \tLists top " + top + " memes\n";
     helpMsg += "*.memebot list starwars* \tSearches for memes with starwars in title\n";
+    helpMsg += "*.memebot listdetail* \tLists top " + top + " memes (results includes images)\n";
+    helpMsg += "*.memebot listdetail starwars* \tSearches for memes with starwars in title (results includes images)\n";
     helpMsg += "*.memebot _id_ _caption_*\tCreates a meme(use a | for line break)";
     send(channel, helpMsg);
 }
