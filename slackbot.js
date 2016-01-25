@@ -77,7 +77,7 @@ slackbot.prototype.handle = function(data) {
     return this;
 };
 
-slackbot.prototype.sendMessage = function(channel, text, attachments) {
+slackbot.prototype.sendMessage = function(channel, text) {
   var message = {
     type: 'message',
     channel: channel,

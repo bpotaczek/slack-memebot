@@ -12,9 +12,7 @@ var commands = {
     }
 };
 var memes = [];
-var validIds = ['401687', '1232147', '107773', '61554', '176908', '146381', '101462', '19194965', '17699', '17496002',
-    '100952', '10628640', '61522', '718432', '61556', '235589', '40945639', '405658', '61520', '61532', '438680',
-    '61533'];
+var top = 20;
 var slack;
 
 function connect() {
@@ -62,10 +60,15 @@ function log(msg) {
 }
 
 function memebot(channel, args, message) {
-    if (args === 'list'){
-        loadMemes(function(msg) {
-            send(channel, msg);
-        });
+    if (args.indexOf('list') > -1) {
+        var a = args.split(' ');
+        var msg;
+        if (a.length > 1) {
+            msg = printMemesBySearch(a.slice(1).join(' '));
+        } else {
+            msg = printMemesByTop();
+        }
+        send(channel, msg);
     } else if (args) {
         var obj = parseText(args);
         findMeme(obj.id, function(meme) {
@@ -89,25 +92,34 @@ function findMeme(id, callback) {
     }
 }
 
-function loadMemes(callback) {
+function loadMemes() {
     request.get('https://api.imgflip.com/get_memes', function(err, response, body) {
         var result = JSON.parse(body);
-        memes = [];
         if (result.success && result.data && result.data.memes) {
-            var tempmemes = result.data.memes;
-            tempmemes.sort(memeCompare);
-            var msg = '';
-            for (var i = tempmemes.length - 1; i >= 0; i--) {
-                if (validIds.indexOf(tempmemes[i].id) > -1) {
-                    msg += tempmemes[i].name + ' (' + tempmemes[i].id + ')\n';
-                    memes.push(tempmemes[i]);
-                }
-            }
-            if (callback) {
-                callback(msg);
-            }
+            memes = result.data.memes;
+            log('memes loaded!');
         }
     });
+}
+
+function printMemesByTop() {
+    var msg = '';
+    var data = memes.slice(0, top);
+    data.sort(memeCompare);
+    for (var i = 0; i < top; i++) {
+        msg += data[i].name + ' (' + data[i].id + ')\n';
+    }
+    return msg;
+}
+
+function printMemesBySearch(search) {
+    var msg = '';
+    for (var i = 0; i < memes.length; i++) {
+        if (memes[i].name.toLowerCase().indexOf(search.toLowerCase()) > -1) {
+            msg += memes[i].name + ' (' + memes[i].id + ')\n';
+        }
+    }
+    return msg;
 }
 
 function memeCompare(a,b){
@@ -135,19 +147,28 @@ function createMeme(obj, callback) {
 }
 
 function splitText(text) {
-    if (text.indexOf(' ') === -1) return { text0: text, text1: '' };
-    var t = text.split(' ');
-    var n = t.length/2;
-    return {
-        text0: t.slice(0, n).join(' '),
-        text1: t.slice(n).join(' ')
-    };
+    if (text.indexOf('|') > -1) {
+        var u = text.split('|');
+        return {
+            text0: u[0],
+            text1: u[1]
+        };
+    } else {
+        if (text.indexOf(' ') === -1) return { text0: text, text1: '' };
+        var t = text.split(' ');
+        var n = t.length/2;
+        return {
+            text0: t.slice(0, n).join(' '),
+            text1: t.slice(n).join(' ')
+        };
+    }
 }
 
 function printHelp(channel) {
     var helpMsg = "memebot commands:\n";
-    helpMsg += "*.memebot list* \tLists all memes\n";
-    helpMsg += "*.memebot _id_ _caption_*\tCreates a meme";
+    helpMsg += "*.memebot list* \tLists top " + top + " memes\n";
+    helpMsg += "*.memebot list starwars* \tSearches for memes with starwars in title\n";
+    helpMsg += "*.memebot _id_ _caption_*\tCreates a meme(use a | for line break)";
     send(channel, helpMsg);
 }
 
