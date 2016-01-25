@@ -62,11 +62,14 @@ function log(msg) {
 function memebot(channel, args, message) {
     if (args.indexOf('list') > -1) {
         var a = args.split(' ');
+        console.log(a);
+        var showImages = (a[0] === 'listdetail');
+        console.log(showImages);
         var msg;
         if (a.length > 1) {
-            msg = printMemesBySearch(a.slice(1).join(' '), args[0] === 'listdetail');
+            msg = printMemesBySearch(a.slice(1).join(' '), showImages);
         } else {
-            msg = printMemesByTop(args[0] === 'listdetail');
+            msg = printMemesByTop(showImages);
         }
         send(channel, msg);
     } else if (args) {
@@ -104,24 +107,26 @@ function loadMemes() {
 
 function printMemesByTop(showImages) {
     var msg = '';
+    console.log(showImages);
     var data = memes.slice(0, top);
     data.sort(memeCompare);
     for (var i = 0; i < top; i++) {
         msg += data[i].name + ' (' + data[i].id + ')\n';
         if (showImages) {
-            msg += data[i].url;
+            msg += data[i].url + '\n';
         }
     }
     return msg;
 }
 
-function printMemesBySearch(search) {
+function printMemesBySearch(search, showImages) {
     var msg = '';
+    console.log(showImages);
     for (var i = 0; i < memes.length; i++) {
         if (memes[i].name.toLowerCase().indexOf(search.toLowerCase()) > -1) {
             msg += memes[i].name + ' (' + memes[i].id + ')\n';
             if (showImages) {
-                msg += data[i].url;
+                msg += memes[i].url + '\n';
             }
         }
     }
