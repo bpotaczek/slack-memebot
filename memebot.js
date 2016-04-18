@@ -1,5 +1,5 @@
 var request = require("request");
-var authToken = 'xoxb-3389833011-k0qN0yVUsFWdpkaRNsKqP5qX';
+var authToken = '';
 var slackbot = require("./slackbot.js");
 var bot = {};
 
